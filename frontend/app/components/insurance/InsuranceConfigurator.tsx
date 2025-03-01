@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Shield } from 'lucide-react';
 import type { InsurancePolicy } from '../../types/insurance';
 import { SuccessDialog } from '../ui/SuccessDialog';
+import { IdentityVerificationDialog } from '../ui/IdentityVerificationDialog';
 
 interface InsuranceConfiguratorProps {
   selectedPolicy: InsurancePolicy | null;
@@ -15,13 +16,11 @@ export function InsuranceConfigurator({ selectedPolicy, onPurchase }: InsuranceC
   const [duration, setDuration] = useState<number>(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
 
   if (!selectedPolicy) return null;
   
-  const handlePurchase = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !duration) return;
-    
+  const handleSubmit = () => {
     setIsSubmitting(true);
     try {
       onPurchase(parseFloat(amount), duration);
@@ -33,6 +32,17 @@ export function InsuranceConfigurator({ selectedPolicy, onPurchase }: InsuranceC
     }
   };
 
+  const handlePurchase = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || !duration) return;
+    setIsSubmitting(false);
+    setShowVerification(true);
+  };
+
+  const handleVerified = () => {
+    handleSubmit();
+  };
+
   const premium = parseFloat(amount || '0') * (selectedPolicy.premiumRate / 100) * (duration / 365);
 
   return (
@@ -40,7 +50,7 @@ export function InsuranceConfigurator({ selectedPolicy, onPurchase }: InsuranceC
       <div className="bg-white rounded-xl p-6 shadow-sm">
         <h3 className="text-xl font-semibold text-gray-900 mb-6">Configure Coverage</h3>
         
-        <form onSubmit={handlePurchase} className="space-y-6">
+        <form id="insurance-form" onSubmit={handlePurchase} className="space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
@@ -96,17 +106,38 @@ export function InsuranceConfigurator({ selectedPolicy, onPurchase }: InsuranceC
               </div>
             </div>
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] font-bold text-lg shadow-md hover:shadow-lg
-              ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {isSubmitting ? 'Processing...' : 'Purchase Coverage'}
-          </button>
         </form>
+
+        <button
+          type="submit"
+          form="insurance-form"
+          disabled={isSubmitting}
+          className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl 
+            transition-all transform hover:scale-[1.02] active:scale-[0.98] 
+            font-bold text-lg shadow-md hover:shadow-lg
+            disabled:opacity-50 disabled:cursor-not-allowed
+            flex items-center justify-center gap-2"
+        >
+          {isSubmitting ? (
+            <>
+              <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <Shield className="h-5 w-5" />
+              Purchase Coverage
+            </>
+          )}
+        </button>
       </div>
+
+      <IdentityVerificationDialog
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerified={handleVerified}
+        action="insurance"
+      />
 
       <SuccessDialog
         isOpen={showSuccess}

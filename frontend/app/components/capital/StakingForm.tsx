@@ -5,6 +5,7 @@ import { AlertCircle, History, Shield } from 'lucide-react';
 import type { InsurancePool } from '../../types/capital';
 import { SuccessDialog } from '../ui/SuccessDialog';
 import { MyStakingsModal } from './MyStakingsModal';
+import { IdentityVerificationDialog } from '../ui/IdentityVerificationDialog';
 
 interface StakingFormProps {
   pool: InsurancePool;
@@ -16,22 +17,33 @@ export function StakingForm({ pool }: StakingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showStakings, setShowStakings] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     setIsSubmitting(true);
     
     try {
       console.log('Staking:', { amount, duration, poolId: pool.id });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setShowSuccess(true);
-      setAmount('');
-      setDuration(pool.lockupPeriod);
+      setTimeout(() => {
+        setShowSuccess(true);
+        setAmount('');
+        setDuration(pool.lockupPeriod);
+        setIsSubmitting(false);
+      }, 1000);
     } catch (error) {
       console.error('Staking failed:', error);
-    } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStake = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || !duration) return;
+    setShowVerification(true);
+  };
+
+  const handleVerified = () => {
+    handleSubmit();
   };
 
   const estimatedReturns = parseFloat(amount || '0') * (pool.currentAPY / 100) * (duration / 365);
@@ -54,7 +66,7 @@ export function StakingForm({ pool }: StakingFormProps) {
         </div>
 
         <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(100vh-240px)]">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="staking-form" onSubmit={handleStake} className="space-y-6">
             <div>
               <label htmlFor="amount" className="block text-sm font-medium text-gray-900 mb-2">
                 Stake Amount (ETH)
@@ -112,7 +124,8 @@ export function StakingForm({ pool }: StakingFormProps) {
 
         <div className="absolute bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-100">
           <button
-            onClick={handleSubmit}
+            type="submit"
+            form="staking-form"
             disabled={isSubmitting}
             className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl 
               transition-all transform hover:scale-[1.02] active:scale-[0.98] 
@@ -148,6 +161,13 @@ export function StakingForm({ pool }: StakingFormProps) {
       <MyStakingsModal 
         isOpen={showStakings}
         onClose={() => setShowStakings(false)}
+      />
+
+      <IdentityVerificationDialog
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+        onVerified={handleVerified}
+        action="staking"
       />
     </>
   );
