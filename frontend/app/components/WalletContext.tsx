@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as fcl from '@onflow/fcl';
+import { VerificationDialog } from './ui/VerificationDialog';
 
 interface FlowService {
   f_type: string;
@@ -39,6 +40,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState<string | null>(null);
+  const [showVerification, setShowVerification] = useState(false);
 
   // Initialize FCL configuration only on client side
   useEffect(() => {
@@ -76,7 +78,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const connect = async () => {
+  const connectWallet = async () => {
     try {
       console.log('Attempting to connect...');
       // Disconnect any existing user first
@@ -93,12 +95,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           if (user.loggedIn && user.addr) {
             clearTimeout(timeout);
             unsubscribe();
+            setIsConnected(true);
+            setShowVerification(true);
             resolve();
           }
         });
       });
     } catch (error) {
-      console.error('Failed to connect:', error);
+      console.error('Failed to connect wallet:', error);
       throw error;
     }
   };
@@ -110,8 +114,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WalletContext.Provider value={{ isConnected, address, connect, disconnect }}>
+    <WalletContext.Provider value={{ isConnected, address, connect: connectWallet, disconnect }}>
       {children}
+      <VerificationDialog 
+        isOpen={showVerification}
+        onClose={() => setShowVerification(false)}
+      />
     </WalletContext.Provider>
   );
 }
