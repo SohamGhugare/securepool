@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertCircle, Upload, X } from 'lucide-react';
-import type { InsurancePolicy } from '../../../types/insurance';
 import { SuccessDialog } from '../../ui/SuccessDialog';
+import { ActivePolicy } from '@/app/types/insurance';
 
 interface FileClaimFormProps {
   isOpen: boolean;
@@ -91,7 +91,7 @@ export function FileClaimForm({ isOpen, onClose, onSubmit, activePolicies = [] }
               <option value="">Select a policy</option>
               {activePolicies.map(policy => (
                 <option key={policy.id} value={policy.id}>
-                  {policy.title} - Coverage: {policy.currentCoverage ?? policy.coverageAmount[0]} ETH
+                  {policy.title} - Coverage: {policy.currentCoverage} ETH
                 </option>
               ))}
             </select>
