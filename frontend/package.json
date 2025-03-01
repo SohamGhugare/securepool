@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@onflow/fcl": "^1.13.5",
     "@reown/appkit": "^1.6.8",
     "@reown/appkit-adapter-bitcoin": "^1.6.8",
     "@reown/appkit-wallet-button": "^1.6.8",
