@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Shield, Briefcase, Activity, DollarSign, AlertCircle, Search, Check } from 'lucide-react';
 import { SuccessDialog } from './ui/SuccessDialog';
 import { FileClaimForm, type ClaimFormData } from './insurance/claims/FileClaimForm';
-
+import { MOCK_ACTIVE_POLICIES } from '@/app/types/insurance';
 interface CoverageOption {
   id: string;
   name: string;
@@ -786,10 +786,10 @@ export function Marketplace() {
 
       {/* Only render FileClaimForm when showClaimForm is true */}
       {showClaimForm && (
-        <FileClaimForm 
+        <FileClaimForm
           isOpen={showClaimForm}
           onClose={() => setShowClaimForm(false)}
-          activePolicies={coverageOptions}
+          activePolicies={MOCK_ACTIVE_POLICIES}
           onSubmit={(data: ClaimFormData) => {
             console.log('Claim submitted:', data);
             setShowClaimForm(false);
